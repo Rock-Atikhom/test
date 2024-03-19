@@ -4,6 +4,7 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 
+st.set_page_config(layout='wide')
 
 st.title('🎈Streamlit Project')
 
@@ -12,31 +13,37 @@ url_input = 'https://raw.githubusercontent.com/Rock-Atikhom/Test/master/test_dat
 ##st.subheader('Output')
 ##st.warning(f'The URL of your dataset is: {url_input}')
 
-if url_input:   
-    df = pd.read_csv(url_input)
-    st.subheader('Dataset Overview')
-    st.write(df)
+if url_input:
+    with st.expander('Dataset Preview'): 
+        df = pd.read_csv(url_input)
+        # st.subheader('Dataset Preview')
+        st.dataframe(df, use_container_width=True)
 
-    st.subheader('Check Missing Value')
-    missing_value = df.isna().sum()
-    st.write(missing_value)
+    with st.expander('Check Missing Value'):
+        ## st.subheader('Check Missing Value')
+        missing_value = df.isna().sum()
+        st.dataframe(missing_value)
 
-    st.subheader('Re-size and Replace Column')
-    re_col = [col.lower().replace(" ", "_") for col in df.columns]
-    df.columns = re_col
-    st.write(df.head(11))
+    with st.expander('Re-Size and Replace Column'):
+        ## st.subheader('Re-size and Replace Column')
+        re_col = [col.lower().replace(" ", "_") for col in df.columns]
+        df.columns = re_col
+        st.dataframe(df.head(11), use_container_width=True)
 
-    st.subheader('Detect Outliers')
-    st.write(df.describe()[['price', 'kitchen_staff', 'drinks_staff']])
+    with st.expander('Detect Outliers'):
+        # st.subheader('Detect Outliers')
+        st.dataframe(df.describe()[['price', 'kitchen_staff', 'drinks_staff']], use_container_width=True)
 
-    st.subheader('Change Object to Datetime')
-    df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
-    df['order_time'] = pd.to_datetime(df['order_time'], format = 'ISO8601')
-    df['serve_time'] = pd.to_datetime(df['serve_time'], format = 'ISO8601')
-    st.write(df[['date', 'order_time', 'serve_time']].head(11))
+    with st.expander('Change Object to Datetime'):
+        # st.subheader('Change Object to Datetime')
+        df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
+        df['order_time'] = pd.to_datetime(df['order_time'], format = 'ISO8601')
+        df['serve_time'] = pd.to_datetime(df['serve_time'], format = 'ISO8601')
+        st.dataframe(df[['date', 'order_time', 'serve_time']].head(11), use_container_width=True)
 
-    st.subheader('Menu Name')
-    st.write(list(df['menu'].unique()))
+    with st.expander('Menu Name'):
+    # st.subheader('Menu Name')
+        st.write(list(df['menu'].unique()))
 
     ## 01
     # st.header('Quantity by Menu')
@@ -55,7 +62,7 @@ if url_input:
         title_text='Overall Quantity by Menu',
         xaxis_title='Quantity',
         yaxis_title='Menu')
-    st.plotly_chart(chart_order_quantity)
+    st.plotly_chart(chart_order_quantity, use_container_width=True)
 
     ## 02
     ## category quantity count
@@ -65,7 +72,7 @@ if url_input:
         category_quantity, 
         values='total_category', names='category', 
         title='Proportion by Category')
-    st.plotly_chart(pie_category)
+    st.plotly_chart(pie_category, use_container_width=True)
     
     ## 03
     # st.header('Overall Sales by Food Category')
@@ -83,7 +90,7 @@ if url_input:
         title_text='Overall Sales by Food Category',
         xaxis_title='Sales',
         yaxis_title='Menu')
-    st.plotly_chart(chart_price_food)
+    st.plotly_chart(chart_price_food, use_container_width=True)
 
     ## 04
     # st.header('Overall Sales by Drink Category')
@@ -101,7 +108,7 @@ if url_input:
         title_text='Overall Sales by Drink Category',
         xaxis_title='Sales',
         yaxis_title='Menu')
-    st.plotly_chart(chart_price_drink)
+    st.plotly_chart(chart_price_drink, use_container_width=True)
 
 
     ## 05
@@ -128,11 +135,12 @@ if url_input:
         x='hours', y='trend_consumer',
         orientation='h', title = 'Consumer Behavior by Hour', line_shape='linear')
 
+    hour_timeline.update_traces(textposition='top center')
     hour_timeline.update_layout(
         title_text='Consumer Behavior by Hour',
         xaxis_title='Hour',
         yaxis_title='Consumer')
-    st.plotly_chart(hour_timeline)
+    st.plotly_chart(hour_timeline, use_container_width=True)
 
 
     ## 06
@@ -157,7 +165,7 @@ if url_input:
         title_text='Consumer Behavior by Day of Week',
         xaxis_title='Day of Week',
         yaxis_title='Consumer')
-    st.plotly_chart(day_timeline)
+    st.plotly_chart(day_timeline, use_container_width=True)
 
 
     ## 07
@@ -181,7 +189,7 @@ if url_input:
         title_text='Kitchen and Drinks Staff by Month',
         xaxis_title='Month',
         yaxis_title='Average Staff')
-    st.plotly_chart(kitchen_month)
+    st.plotly_chart(kitchen_month, use_container_width=True)
 
     
     ## 08
@@ -200,12 +208,13 @@ if url_input:
     # st.plotly_chart(kitchen_day)
 
     kitchen_day.update_layout(
-        title_text='Kitchen and Drinks Staff by Month',
+        title_text='Kitchen and Drinks Staff by Day of Week',
         xaxis_title='Day of Week',
         yaxis_title='Average Staff')
-    st.plotly_chart(kitchen_day)
+    st.plotly_chart(kitchen_day, use_container_width=True)
 
-    st.write('Food by Kitchen Staff')
+
+    st.write('**Food by Kitchen Staff**')
     ## change datetime to hours for food and drink category
     df3['start_time'] = df['order_time'].dt.strftime('%H:%M:%S')
     df3['finish_time'] = df['serve_time'].dt.strftime('%H:%M:%S')
@@ -222,15 +231,15 @@ if url_input:
     .agg(avg_kitchen = ('kitchen_staff', 'mean'), avg_cooking_time = ('cooking_time', 'mean') ,total_order = ('menu', 'count'))\
     .sort_values('total_order', ascending = False).reset_index()
     # st.line_chart(cooking_food, x='avg_cooking_time', '')
-    st.dataframe(cooking_food)
+    st.dataframe(cooking_food, use_container_width=True)
 
 
-    st.write('Drink by Drinks Staff')
+    st.write('**Drink by Drinks Staff**')
     cooking_drink = df3[['menu', 'category', 'drinks_staff', 'cooking_time']].query("category == 'drink'")\
     .groupby(['menu', 'category'])[['menu', 'drinks_staff', 'cooking_time']]\
     .agg(avg_drinks_staff = ('drinks_staff', 'mean'), avg_cooking_time = ('cooking_time', 'mean') ,total_order = ('menu', 'count'))\
     .sort_values('total_order', ascending = False).reset_index()
-    st.dataframe(cooking_drink)
+    st.dataframe(cooking_drink, use_container_width=True)
 
 else:
     st.error('⬅️ Awaiting your Dataset!')
