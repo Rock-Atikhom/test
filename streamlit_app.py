@@ -38,6 +38,7 @@ if url_input:
     st.subheader('Menu Name')
     st.write(list(df['menu'].unique()))
 
+    ## 01
     # st.header('Quantity by Menu')
     order_quantity = df[['menu', 'category']]\
     .groupby('menu').agg(total_menu = ('menu','count'))\
@@ -47,10 +48,16 @@ if url_input:
     chart_order_quantity = px.bar(
         order_quantity, 
         x='total_menu', y='menu',
-        orientation='h', color='menu', title = '<b>Overall Quantity by Menu</b>')
+        orientation='h', color='menu', title = 'Overall Quantity by Menu')
+    # st.plotly_chart(chart_order_quantity)
+
+    chart_order_quantity.update_layout(
+        title_text='Overall Quantity by Menu',
+        xaxis_title='Quantity',
+        yaxis_title='Menu')
     st.plotly_chart(chart_order_quantity)
 
-
+    ## 02
     ## category quantity count
     ## drink > food
     category_quantity = df[['menu','category']].groupby('category')['category'].agg(total_category = 'count').reset_index()
@@ -60,7 +67,7 @@ if url_input:
         title='Proportion by Category')
     st.plotly_chart(pie_category)
     
-
+    ## 03
     # st.header('Overall Sales by Food Category')
     revenue_food = df.query("category == 'food' ")\
     .groupby(['menu', 'category', 'price'])['price']\
@@ -70,10 +77,15 @@ if url_input:
     chart_price_food = px.bar(
         revenue_food, 
         x='total_price', y='menu',
-        orientation='h', color='menu', title = '<b>Overall Sales by Food Category</b>')
+        orientation='h', color='menu', title = 'Overall Sales by Food Category')
+
+    chart_price_food.update_layout(
+        title_text='Overall Sales by Food Category',
+        xaxis_title='Sales',
+        yaxis_title='Menu')
     st.plotly_chart(chart_price_food)
 
-
+    ## 04
     # st.header('Overall Sales by Drink Category')
     revenue_drink = df.query("category == 'drink' ")\
     .groupby(['menu', 'category', 'price'])['price']\
@@ -83,10 +95,16 @@ if url_input:
     chart_price_drink = px.bar(
         revenue_drink, 
         x='total_price', y='menu',
-        orientation='h', color='menu', title = '<b>Overall Sales by Drink Category</b>')
+        orientation='h', color='menu', title = 'Overall Sales by Drink Category')
+    
+    chart_price_drink.update_layout(
+        title_text='Overall Sales by Drink Category',
+        xaxis_title='Sales',
+        yaxis_title='Menu')
     st.plotly_chart(chart_price_drink)
 
 
+    ## 05
     ## kitchen_staff
     # df2 = df.query("category == 'food'")
     # df2['date'] = df2['date'].dt.strftime('%m')
@@ -94,7 +112,6 @@ if url_input:
     # ## drinks_staff
     # df3 = df.query("category == 'drink'")
     # df3['date'] = df3['date'].dt.strftime('%m')
-    
 
     ## enter the store by hour
     df3 = df
@@ -109,9 +126,16 @@ if url_input:
     hour_timeline = px.line(
         trend_consumer, 
         x='hours', y='trend_consumer',
-        orientation='h', title = '<b>Consumer Behavior by Hour</b>', line_shape='linear')
+        orientation='h', title = 'Consumer Behavior by Hour', line_shape='linear')
+
+    hour_timeline.update_layout(
+        title_text='Consumer Behavior by Hour',
+        xaxis_title='Hour',
+        yaxis_title='Consumer')
     st.plotly_chart(hour_timeline)
 
+
+    ## 06
     ## enter the store by day of week
     ## st.header('Consumer Behavior by Day of Week')
     df3['week_of_days'] = df3['date'].dt.strftime('%w')
@@ -127,10 +151,16 @@ if url_input:
     day_timeline = px.line(
         day_of_weeks, 
         x='week_of_days', y='trend_consumer',
-        orientation='h', title = '<b>Consumer Behavior by Day of Week</b>', line_shape='linear')
+        orientation='v', title = 'Consumer Behavior by Day of Week', line_shape='linear')
+    
+    day_timeline.update_layout(
+        title_text='Consumer Behavior by Day of Week',
+        xaxis_title='Day of Week',
+        yaxis_title='Consumer')
     st.plotly_chart(day_timeline)
 
 
+    ## 07
     ## kitchen and drinks staff
     df2 = df
     df2['date'] = df2['date'].dt.strftime('%m')
@@ -146,8 +176,15 @@ if url_input:
         kitchen_drinks_month, 
         y=['avg_drinks_staff', 'avg_kitchen_staff'], x='date',
         orientation='v', title = 'Kitchen and Drinks staff by Month', barmode='group')
+    
+    kitchen_month.update_layout(
+        title_text='Kitchen and Drinks Staff by Month',
+        xaxis_title='Month',
+        yaxis_title='Average Staff')
     st.plotly_chart(kitchen_month)
 
+    
+    ## 08
     ## st.header('Kitchen and Drinks staff by Day of Week')
     ## kitchen and drinks staff by day
     kitchen_drinks_day = df3[['week_of_days', 'category', 'kitchen_staff', 'drinks_staff', 'menu']]\
@@ -160,6 +197,12 @@ if url_input:
         kitchen_drinks_day,
         y=['avg_drinks_staff','avg_kitchen_staff'], x='week_of_days',
         orientation='v', title='Kitchen and Drinks Staff by Day of Week', barmode='group')
+    # st.plotly_chart(kitchen_day)
+
+    kitchen_day.update_layout(
+        title_text='Kitchen and Drinks Staff by Month',
+        xaxis_title='Day of Week',
+        yaxis_title='Average Staff')
     st.plotly_chart(kitchen_day)
 
     st.write('Food by Kitchen Staff')
