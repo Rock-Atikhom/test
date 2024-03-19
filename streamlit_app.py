@@ -88,12 +88,12 @@ if url_input:
 
 
     ## kitchen_staff
-    df2 = df.query("category == 'food'")
-    df2['date'] = df2['date'].dt.strftime('%m')
+    # df2 = df.query("category == 'food'")
+    # df2['date'] = df2['date'].dt.strftime('%m')
 
-    ## drinks_staff
-    df3 = df.query("category == 'drink'")
-    df3['date'] = df3['date'].dt.strftime('%m')
+    # ## drinks_staff
+    # df3 = df.query("category == 'drink'")
+    # df3['date'] = df3['date'].dt.strftime('%m')
     
 
     ## enter the store by hour
@@ -149,11 +149,18 @@ if url_input:
     st.plotly_chart(kitchen_month)
 
     ## st.header('Kitchen and Drinks staff by Day of Week')
-    kitchen_drinks_month = df2[['date', 'category', 'kitchen_staff', 'drinks_staff', 'menu']]\
-    .groupby('date')[['kitchen_staff', 'drinks_staff', 'menu']]\
+    ## kitchen and drinks staff by day
+    kitchen_drinks_day = df3[['week_of_days', 'category', 'kitchen_staff', 'drinks_staff', 'menu']]\
+    .groupby('week_of_days')[['kitchen_staff', 'drinks_staff', 'menu']]\
     .agg(avg_kitchen_staff = ('kitchen_staff','mean'), avg_drinks_staff = ('drinks_staff', 'mean') , total_order = ('menu', 'count'))\
-    .sort_values('date', ascending=True).reset_index()
+    .sort_values('week_of_days', ascending=True).reset_index()
     ## st.bar_chart(kitchen_drinks_month, x='date', y=['avg_drinks_staff', 'avg_kitchen_staff'])
+
+    kitchen_day = px.bar(
+        kitchen_drinks_day,
+        x=['avg_drinks_staff','avg_kitchen_staff'], y='week_of_days',
+        orientation='h', title='Kitchen and Drinks Staff by Day of Week')
+    st.plotly_chart(kitchen_day)
 
     st.write('Food by Kitchen Staff')
     ## change datetime to hours for food and drink category
@@ -181,7 +188,6 @@ if url_input:
     .agg(avg_drinks_staff = ('drinks_staff', 'mean'), avg_cooking_time = ('cooking_time', 'mean') ,total_order = ('menu', 'count'))\
     .sort_values('total_order', ascending = False).reset_index()
     st.dataframe(cooking_drink)
-
-
+    
 else:
     st.error('⬅️ Awaiting your Dataset!')
