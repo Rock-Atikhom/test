@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-st.title('🎈 Dashboard Project')
+st.title('🎈Streamlit Project')
 
 url_input = 'https://raw.githubusercontent.com/Rock-Atikhom/Test/master/test_data.csv'
 
@@ -14,28 +14,28 @@ url_input = 'https://raw.githubusercontent.com/Rock-Atikhom/Test/master/test_dat
 
 if url_input:   
     df = pd.read_csv(url_input)
-    st.header('Dataset Overview')
+    st.subheader('Dataset Overview')
     st.write(df)
 
-    st.header('Check Missing Value')
+    st.subheader('Check Missing Value')
     missing_value = df.isna().sum()
     st.write(missing_value)
 
-    st.header('Re-size and replace column')
+    st.subheader('Re-size and Replace Column')
     re_col = [col.lower().replace(" ", "_") for col in df.columns]
     df.columns = re_col
     st.write(df.head(11))
 
-    st.header('Detect outlier value')
+    st.subheader('Detect Outliers')
     st.write(df.describe()[['price', 'kitchen_staff', 'drinks_staff']])
 
-    st.header('Change Object to datetime type')
+    st.subheader('Change Object to Datetime')
     df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
     df['order_time'] = pd.to_datetime(df['order_time'], format = 'ISO8601')
     df['serve_time'] = pd.to_datetime(df['serve_time'], format = 'ISO8601')
     st.write(df[['date', 'order_time', 'serve_time']].head(11))
 
-    st.header('Menu Name')
+    st.subheader('Menu Name')
     st.write(list(df['menu'].unique()))
 
     # st.header('Quantity by Menu')
@@ -155,7 +155,7 @@ if url_input:
     .sort_values('date', ascending=True).reset_index()
     ## st.bar_chart(kitchen_drinks_month, x='date', y=['avg_drinks_staff', 'avg_kitchen_staff'])
 
-    st.subheader('Food by Kitchen Staff')
+    st.write('Food by Kitchen Staff')
     ## change datetime to hours for food and drink category
     df3['start_time'] = df['order_time'].dt.strftime('%H:%M:%S')
     df3['finish_time'] = df['serve_time'].dt.strftime('%H:%M:%S')
@@ -175,7 +175,7 @@ if url_input:
     st.dataframe(cooking_food)
 
 
-    st.subheader('Drink by Drinks Staff')
+    st.write('Drink by Drinks Staff')
     cooking_drink = df3[['menu', 'category', 'drinks_staff', 'cooking_time']].query("category == 'drink'")\
     .groupby(['menu', 'category'])[['menu', 'drinks_staff', 'cooking_time']]\
     .agg(avg_drinks_staff = ('drinks_staff', 'mean'), avg_cooking_time = ('cooking_time', 'mean') ,total_order = ('menu', 'count'))\
