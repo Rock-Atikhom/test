@@ -148,12 +148,12 @@ if url_input:
         orientation='h', title = '<b>Kitchen and Drinks staff by Month</b>')
     st.plotly_chart(kitchen_month)
 
-    st.header('Kitchen and Drinks staff by Day of Week')
+    ## st.header('Kitchen and Drinks staff by Day of Week')
     kitchen_drinks_month = df2[['date', 'category', 'kitchen_staff', 'drinks_staff', 'menu']]\
     .groupby('date')[['kitchen_staff', 'drinks_staff', 'menu']]\
     .agg(avg_kitchen_staff = ('kitchen_staff','mean'), avg_drinks_staff = ('drinks_staff', 'mean') , total_order = ('menu', 'count'))\
     .sort_values('date', ascending=True).reset_index()
-    st.bar_chart(kitchen_drinks_month, x='date', y=['avg_drinks_staff', 'avg_kitchen_staff'])
+    ## st.bar_chart(kitchen_drinks_month, x='date', y=['avg_drinks_staff', 'avg_kitchen_staff'])
 
     st.subheader('Food by Kitchen Staff')
     ## change datetime to hours for food and drink category
