@@ -144,8 +144,8 @@ if url_input:
 
     kitchen_month = px.bar(
         kitchen_drinks_month, 
-        x=['avg_drinks_staff', 'avg_kitchen_staff'], y='date',
-        orientation='h', title = '<b>Kitchen and Drinks staff by Month</b>')
+        y=['avg_drinks_staff', 'avg_kitchen_staff'], x='date',
+        orientation='v', title = 'Kitchen and Drinks staff by Month', barmode='group')
     st.plotly_chart(kitchen_month)
 
     ## st.header('Kitchen and Drinks staff by Day of Week')
@@ -158,8 +158,8 @@ if url_input:
 
     kitchen_day = px.bar(
         kitchen_drinks_day,
-        x=['avg_drinks_staff','avg_kitchen_staff'], y='week_of_days',
-        orientation='h', title='Kitchen and Drinks Staff by Day of Week')
+        y=['avg_drinks_staff','avg_kitchen_staff'], x='week_of_days',
+        orientation='v', title='Kitchen and Drinks Staff by Day of Week', barmode='group')
     st.plotly_chart(kitchen_day)
 
     st.write('Food by Kitchen Staff')
@@ -188,6 +188,6 @@ if url_input:
     .agg(avg_drinks_staff = ('drinks_staff', 'mean'), avg_cooking_time = ('cooking_time', 'mean') ,total_order = ('menu', 'count'))\
     .sort_values('total_order', ascending = False).reset_index()
     st.dataframe(cooking_drink)
-    
+
 else:
     st.error('⬅️ Awaiting your Dataset!')
