@@ -45,6 +45,9 @@ if url_input:
     # st.subheader('Menu Name')
         st.write(list(df['menu'].unique()))
 
+
+    col1, col2 = st.columns([4, 2])
+
     ## 01
     # st.header('Quantity by Menu')
     order_quantity = df[['menu', 'category']]\
@@ -58,22 +61,26 @@ if url_input:
         orientation='h', color='menu', title = 'Overall Quantity by Menu')
     # st.plotly_chart(chart_order_quantity)
 
-    chart_order_quantity.update_layout(
-        title_text='Overall Quantity by Menu',
-        xaxis_title='Quantity',
-        yaxis_title='Menu')
-    st.plotly_chart(chart_order_quantity, use_container_width=True)
+    with col1:
+        chart_order_quantity.update_layout(
+            title_text='Overall Quantity by Menu',
+            xaxis_title='Quantity',
+            yaxis_title='Menu')
+        st.plotly_chart(chart_order_quantity, use_container_width=True)
 
+    with col2:
     ## 02
     ## category quantity count
     ## drink > food
-    category_quantity = df[['menu','category']].groupby('category')['category'].agg(total_category = 'count').reset_index()
-    pie_category = px.pie(
-        category_quantity, 
-        values='total_category', names='category', 
-        title='Proportion by Category')
-    st.plotly_chart(pie_category, use_container_width=True)
+        category_quantity = df[['menu','category']].groupby('category')['category'].agg(total_category = 'count').reset_index()
+        pie_category = px.pie(
+            category_quantity, 
+            values='total_category', names='category', 
+            title='Proportion by Category')
+        st.plotly_chart(pie_category, use_container_width=True)
     
+    col3, col4 = st.columns([5,5])
+
     ## 03
     # st.header('Overall Sales by Food Category')
     revenue_food = df.query("category == 'food' ")\
@@ -90,7 +97,9 @@ if url_input:
         title_text='Overall Sales by Food Category',
         xaxis_title='Sales',
         yaxis_title='Menu')
-    st.plotly_chart(chart_price_food, use_container_width=True)
+    
+    with col3:
+        st.plotly_chart(chart_price_food, use_container_width=True)
 
     ## 04
     # st.header('Overall Sales by Drink Category')
@@ -108,8 +117,12 @@ if url_input:
         title_text='Overall Sales by Drink Category',
         xaxis_title='Sales',
         yaxis_title='Menu')
-    st.plotly_chart(chart_price_drink, use_container_width=True)
 
+    with col4:
+        st.plotly_chart(chart_price_drink, use_container_width=True)
+
+
+    col5, col6 = st.columns([4,4])
 
     ## 05
     ## kitchen_staff
@@ -132,7 +145,8 @@ if url_input:
 
     hour_timeline = px.line(
         trend_consumer, 
-        x='hours', y='trend_consumer',
+        x='hours', y='trend_consumer', markers=True,
+        text='trend_consumer',
         orientation='h', title = 'Consumer Behavior by Hour', line_shape='linear')
 
     hour_timeline.update_traces(textposition='top center')
@@ -140,7 +154,9 @@ if url_input:
         title_text='Consumer Behavior by Hour',
         xaxis_title='Hour',
         yaxis_title='Consumer')
-    st.plotly_chart(hour_timeline, use_container_width=True)
+    
+    with col5:
+        st.plotly_chart(hour_timeline, use_container_width=True)
 
 
     ## 06
@@ -158,15 +174,20 @@ if url_input:
 
     day_timeline = px.line(
         day_of_weeks, 
-        x='week_of_days', y='trend_consumer',
+        x='week_of_days', y='trend_consumer', 
+        markers=True, text='trend_consumer',
         orientation='v', title = 'Consumer Behavior by Day of Week', line_shape='linear')
     
+    day_timeline.update_traces(textposition='top center')
     day_timeline.update_layout(
         title_text='Consumer Behavior by Day of Week',
         xaxis_title='Day of Week',
         yaxis_title='Consumer')
-    st.plotly_chart(day_timeline, use_container_width=True)
+    
+    with col6:
+        st.plotly_chart(day_timeline, use_container_width=True)
 
+    col7, col8 = st.columns([3,3])
 
     ## 07
     ## kitchen and drinks staff
@@ -189,7 +210,9 @@ if url_input:
         title_text='Kitchen and Drinks Staff by Month',
         xaxis_title='Month',
         yaxis_title='Average Staff')
-    st.plotly_chart(kitchen_month, use_container_width=True)
+
+    with col7:
+        st.plotly_chart(kitchen_month, use_container_width=True)
 
     
     ## 08
@@ -211,7 +234,9 @@ if url_input:
         title_text='Kitchen and Drinks Staff by Day of Week',
         xaxis_title='Day of Week',
         yaxis_title='Average Staff')
-    st.plotly_chart(kitchen_day, use_container_width=True)
+    
+    with col8:
+        st.plotly_chart(kitchen_day, use_container_width=True)
 
 
     st.write('**Food by Kitchen Staff**')
