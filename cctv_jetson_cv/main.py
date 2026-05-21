@@ -6,11 +6,41 @@ import cv2
 import numpy as np
 from collections import defaultdict, deque
 from video_stream import VideoStream
-from inference import YOLOInferenceEngine
+from inference import YOLOInferenceEngine, RFDETRInferenceEngine
+
+# Standard COCO classes dictionary fallback
+COCO_CLASSES = {
+    0: "person", 1: "bicycle", 2: "car", 3: "motorcycle", 4: "airplane", 5: "bus",
+    6: "train", 7: "truck", 8: "boat", 9: "traffic light", 10: "fire hydrant",
+    11: "stop sign", 12: "parking meter", 13: "bench", 14: "bird", 15: "cat",
+    16: "dog", 17: "horse", 18: "sheep", 19: "cow", 20: "elephant", 21: "bear",
+    22: "zebra", 23: "giraffe", 24: "backpack", 25: "umbrella", 26: "handbag",
+    27: "tie", 28: "suitcase", 29: "frisbee", 30: "skis", 31: "snowboard",
+    32: "sports ball", 33: "kite", 34: "baseball bat", 35: "baseball glove",
+    36: "skateboard", 37: "surfboard", 38: "tennis racket", 39: "bottle",
+    40: "wine glass", 41: "cup", 42: "fork", 43: "knife", 44: "spoon", 45: "bowl",
+    46: "banana", 47: "apple", 48: "sandwich", 49: "orange", 50: "broccoli",
+    51: "carrot", 52: "hot dog", 53: "pizza", 54: "donut", 55: "cake",
+    56: "chair", 57: "couch", 58: "potted plant", 59: "bed", 60: "dining table",
+    61: "toilet", 62: "tv", 63: "laptop", 64: "mouse", 65: "remote", 66: "keyboard",
+    67: "cell phone", 68: "microwave", 69: "oven", 70: "toaster", 71: "sink",
+    72: "refrigerator", 73: "book", 74: "clock", 75: "vase", 76: "scissors",
+    77: "teddy bear", 78: "hair drier", 79: "toothbrush"
+}
 
 def load_config(config_path="config.yaml"):
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
+
+# --- Contrast Enhancement Preprocessing ---
+def enhance_bgr_with_lab_clahe(frame_bgr, clip_limit=2.0, tile_grid_size=(8, 8)):
+    """Enhance luminance in Lab space while keeping color channels stable."""
+    lab = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2LAB)
+    l_channel, a_channel, b_channel = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+    l_enhanced = clahe.apply(l_channel)
+    enhanced_lab = cv2.merge((l_enhanced, a_channel, b_channel))
+    return cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
 
 # --- Line Segment Intersection Helpers ---
 def ccw(A, B, C):
@@ -85,7 +115,7 @@ def center_of_box_xyxy(box_xyxy):
 
 def process_and_draw(
     frame_bgr, 
-    result, 
+    tracked_objects, 
     track_history, 
     previous_centers, 
     previous_times, 
@@ -104,16 +134,14 @@ def process_and_draw(
     line_p1 = (line_coords[0], line_coords[1])
     line_p2 = (line_coords[2], line_coords[3])
 
-    if result.boxes is None or result.boxes.id is None:
+    if not tracked_objects:
         return annotated
 
-    boxes = result.boxes.xyxy.cpu().numpy()
-    track_ids = result.boxes.id.int().cpu().tolist()
-    class_ids = result.boxes.cls.int().cpu().tolist()
-    confidences = result.boxes.conf.cpu().numpy()
-
-    for box, track_id, class_id, conf in zip(boxes, track_ids, class_ids, confidences):
-        x1, y1, x2, y2 = box.astype(int)
+    for obj in tracked_objects:
+        x1, y1, x2, y2 = map(int, obj.bbox)
+        track_id = obj.track_id
+        class_id = obj.class_id
+        conf = obj.confidence
         cx, cy = center_of_box_xyxy((x1, y1, x2, y2))
 
         # 1. Centroid History
@@ -204,13 +232,21 @@ def main():
         mode=execution_mode
     )
     
-    # Initialize Inference Engine
-    engine = YOLOInferenceEngine(
-        model_path=model_cfg["model_path"],
-        mode=execution_mode
-    )
-    
-    class_names = engine.model.names if engine.model else {}
+    # Initialize Inference Engine based on model family type
+    model_type = model_cfg.get("type", "yolo").lower()
+    if model_type == "rfdetr":
+        engine = RFDETRInferenceEngine(
+            model_path=model_cfg["model_path"],
+            mode=execution_mode,
+            conf=model_cfg["conf"]
+        )
+        class_names = COCO_CLASSES
+    else:
+        engine = YOLOInferenceEngine(
+            model_path=model_cfg["model_path"],
+            mode=execution_mode
+        )
+        class_names = engine.model.names if (engine.model and hasattr(engine.model, "names")) else COCO_CLASSES
     
     # Setup tracking variables
     track_history = defaultdict(lambda: deque(maxlen=30))
@@ -250,8 +286,8 @@ def main():
             else:
                 processed_frame = frame.copy()
                 
-            # 2. Run Inference & Tracking
-            results = engine.track(
+            # 2. Run Inference & Tracking (returns list of TrackedObject)
+            tracked_objects = engine.track(
                 processed_frame,
                 persist=True,
                 tracker=model_cfg["tracker_config"],
@@ -263,7 +299,7 @@ def main():
             # 3. Draw Results and tracking trails
             annotated_frame = process_and_draw(
                 frame,
-                results[0],
+                tracked_objects,
                 track_history,
                 previous_centers,
                 previous_times,
@@ -301,7 +337,7 @@ def main():
                 frame_counter = 0
                 fps_start_time = now
                 
-            fps_text = f"FPS: {calculated_fps:.1f} | Mode: {execution_mode.upper()}"
+            fps_text = f"FPS: {calculated_fps:.1f} | Mode: {execution_mode.upper()} | Model: {model_type.upper()}"
             cv2.putText(annotated_frame, fps_text, (15, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2, cv2.LINE_AA)
             
             # Display Window

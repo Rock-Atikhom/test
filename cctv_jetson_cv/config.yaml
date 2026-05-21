@@ -3,7 +3,8 @@ execution:
   mode: "local"
 
 stream:
-  # Source: 0 (webcam), path to video file (e.g. 'traffic.mp4'), or RTSP stream URL
+  # Source: 0 (webcam), path to video file, or RTSP stream URL
+  # Pre-production CCTV stream: "rtsp://172.16.30.111:8554/cctv0"
   source: 0
   width: 640
   height: 480
@@ -11,7 +12,9 @@ stream:
   fps: 30
 
 model:
-  # Path to PyTorch model (e.g., 'yolo11n.pt') or compiled TensorRT engine (e.g., 'yolo11n.engine')
+  # Model Type: 'yolo' or 'rfdetr'
+  type: "yolo"
+  # Path to PyTorch model (e.g., 'yolo11n.pt' or 'rfdetr-nano') or compiled TensorRT engine
   model_path: "yolo11n.pt"
   tracker_config: "bytetrack.yaml"
   imgsz: 320             # Image resolution for model (320 is recommended for Jetson Nano, 640 for local)

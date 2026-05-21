@@ -3,3 +3,5 @@ opencv-python>=4.8.0
 pyyaml>=6.0
 numpy>=1.23.0
 pycuda>=2022.1; sys_platform != "darwin"
+rfdetr>=0.0.8
+supervision>=0.18.0
