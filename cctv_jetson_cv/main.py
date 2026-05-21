@@ -218,6 +218,13 @@ def main():
     pre_cfg = cfg["preprocessing"]
     counting_cfg = cfg["counting"]
     
+    output_path = stream_cfg.get("output_path", "")
+    video_writer = None
+    if output_path:
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video_writer = cv2.VideoWriter(output_path, fourcc, stream_cfg["fps"], (stream_cfg["width"], stream_cfg["height"]))
+        print(f"[Main] Saving output video to {output_path}")
+        
     print(f"--- CCTV Tracking, Counting & Color Detection ---")
     print(f"Execution Mode:   {execution_mode.upper()}")
     print(f"Stream Source:    {stream_cfg['source']}")
@@ -340,6 +347,10 @@ def main():
             fps_text = f"FPS: {calculated_fps:.1f} | Mode: {execution_mode.upper()} | Model: {model_type.upper()}"
             cv2.putText(annotated_frame, fps_text, (15, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2, cv2.LINE_AA)
             
+            # Save to output file
+            if video_writer is not None:
+                video_writer.write(annotated_frame)
+                
             # Display Window
             try:
                 cv2.imshow("Jetson CV CCTV Tracking", annotated_frame)
@@ -355,6 +366,9 @@ def main():
         print("[Main] Process interrupted.")
     finally:
         stream.stop()
+        if video_writer is not None:
+            video_writer.release()
+            print(f"[Main] Output video saved successfully to: {output_path}")
         cv2.destroyAllWindows()
         print("[Main] Cleanup complete.")
 

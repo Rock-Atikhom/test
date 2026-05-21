@@ -1,0 +1,6 @@
+*.mp4
+*.pt
+*.pth
+*.onnx
+*.engine
+__pycache__/
