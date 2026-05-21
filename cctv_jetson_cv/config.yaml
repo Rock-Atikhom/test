@@ -10,12 +10,13 @@ stream:
   # - rtsp://172.16.30.111:8554/cctv2
   # - rtsp://172.16.30.111:8554/cctv3
   # - rtsp://172.16.30.111:8554/cctv4
-  source: "rtsp://172.16.30.111:8554/cctv0"
+  source: "rtsp://172.16.30.111:8554/cctv1"
   width: 1280
   height: 720
   # Target FPS for the capture thread
   fps: 30
   output_path: "output.mp4"
+  show_gui: true
 
 model:
   # Model Type: 'yolo' or 'rfdetr'

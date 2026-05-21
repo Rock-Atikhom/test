@@ -242,6 +242,7 @@ def main():
     roi_cfg = cfg.get("roi", {})
     roi_enabled = roi_cfg.get("enabled", False)
     roi_polygon = roi_cfg.get("polygon", [])
+    show_gui = stream_cfg.get("show_gui", True)
     
     output_path = stream_cfg.get("output_path", "")
     video_writer = None
@@ -296,6 +297,7 @@ def main():
     # Frame rate calculation
     fps_start_time = time.time()
     frame_counter = 0
+    fps_frame_counter = 0
     calculated_fps = 0.0
     
     stream.start()
@@ -308,6 +310,7 @@ def main():
                 continue
                 
             frame_counter += 1
+            fps_frame_counter += 1
             h_f, w_f = frame.shape[:2]
             
             # Lazy-initialize VideoWriter with actual frame dimensions to prevent silent discards
@@ -371,8 +374,8 @@ def main():
             now = time.time()
             dt = now - fps_start_time
             if dt >= 1.0:
-                calculated_fps = frame_counter / dt
-                frame_counter = 0
+                calculated_fps = fps_frame_counter / dt
+                fps_frame_counter = 0
                 fps_start_time = now
                 
             fps_text = f"FPS: {calculated_fps:.1f} | Mode: {execution_mode.upper()} | Model: {model_type.upper()}"
@@ -382,14 +385,22 @@ def main():
             if video_writer is not None:
                 video_writer.write(annotated_frame)
                 
+            # Print periodic progress
+            if frame_counter % 50 == 0:
+                print(f"[Main] Processed {frame_counter} frames... (FPS: {calculated_fps:.1f})")
+
             # Display Window
-            try:
-                cv2.imshow("Jetson CV CCTV Tracking", annotated_frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-            except cv2.error:
+            if show_gui:
+                try:
+                    cv2.imshow("Jetson CV CCTV Tracking", annotated_frame)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+                except cv2.error:
+                    if frame_counter == 1:
+                        print("[Main] Warning: GUI window unavailable (headless). Tracking active in background...")
+            else:
                 if frame_counter == 1:
-                    print("[Main] Warning: GUI window unavailable (headless). Tracking active in background...")
+                    print("[Main] Running in headless mode. Tracking active in background...")
                 
             time.sleep(0.001)
             
