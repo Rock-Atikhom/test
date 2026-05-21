@@ -19,9 +19,9 @@ stream:
 
 model:
   # Model Type: 'yolo' or 'rfdetr'
-  type: "rfdetr"
-  # Path to PyTorch model (e.g., 'yolo11n.pt' or 'rfdetr-nano') or compiled TensorRT engine
-  model_path: "rfdetr-nano"
+  type: "yolo"
+  # Path to PyTorch model (e.g., 'yolo26n.pt' or 'rfdetr-nano') or compiled TensorRT engine
+  model_path: "yolo26n.pt"
   tracker_config: "bytetrack.yaml"
   imgsz: 320             # Image resolution for model (320 is recommended for Jetson Nano, 640 for local)
   conf: 0.35
@@ -36,3 +36,9 @@ counting:
   enabled: true
   # [x1, y1, x2, y2] of the virtual counting line (defaults to midpoint of screen height)
   line_coords: [0, 360, 1280, 360]
+
+roi:
+  enabled: true
+  # Polygon coordinates defining the Region of Interest: [[x1, y1], [x2, y2], [x3, y3], ...]
+  # Example trapezoid ROI for 1280x720: [[100, 700], [500, 350], [800, 350], [1200, 700]]
+  polygon: [[100, 700], [500, 350], [800, 350], [1200, 700]]

@@ -123,11 +123,26 @@ def process_and_draw(
     counting_cfg, 
     cumulative_counts, 
     crossed_ids,
+    roi_enabled=False,
+    roi_polygon=None,
     max_trail=30
 ):
     now = time.time()
     annotated = frame_bgr.copy()
     h_f, w_f = frame_bgr.shape[:2]
+
+    # Draw ROI Polygon overlay if enabled
+    if roi_enabled and roi_polygon and len(roi_polygon) >= 3:
+        pts = np.array(roi_polygon, dtype=np.int32).reshape((-1, 1, 2))
+        overlay = annotated.copy()
+        cv2.fillPoly(overlay, [pts], (255, 0, 0))  # Blue fill
+        cv2.addWeighted(overlay, 0.15, annotated, 0.85, 0, annotated)
+        cv2.polylines(annotated, [pts], True, (255, 0, 0), 2)  # Blue boundary
+        
+        # Label ROI at the top-leftmost vertex
+        min_idx = np.argmin([p[1] for p in roi_polygon])
+        lbl_pos = tuple(roi_polygon[min_idx])
+        cv2.putText(annotated, "ACTIVE ROI", (lbl_pos[0] + 5, lbl_pos[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 0, 0), 1, cv2.LINE_AA)
 
     # Get counting line coordinates from config
     line_coords = counting_cfg.get("line_coords", [0, h_f // 2, w_f, h_f // 2])
@@ -139,10 +154,17 @@ def process_and_draw(
 
     for obj in tracked_objects:
         x1, y1, x2, y2 = map(int, obj.bbox)
+        cx, cy = center_of_box_xyxy((x1, y1, x2, y2))
+
+        # Filter by ROI if enabled (centroid must be inside the polygon)
+        if roi_enabled and roi_polygon and len(roi_polygon) >= 3:
+            roi_poly = np.array(roi_polygon, dtype=np.int32).reshape((-1, 1, 2))
+            if cv2.pointPolygonTest(roi_poly, (cx, cy), False) < 0:
+                continue
+
         track_id = obj.track_id
         class_id = obj.class_id
         conf = obj.confidence
-        cx, cy = center_of_box_xyxy((x1, y1, x2, y2))
 
         # 1. Centroid History
         prev_cx, prev_cy = previous_centers.get(track_id, (cx, cy))
@@ -217,13 +239,14 @@ def main():
     model_cfg = cfg["model"]
     pre_cfg = cfg["preprocessing"]
     counting_cfg = cfg["counting"]
+    roi_cfg = cfg.get("roi", {})
+    roi_enabled = roi_cfg.get("enabled", False)
+    roi_polygon = roi_cfg.get("polygon", [])
     
     output_path = stream_cfg.get("output_path", "")
     video_writer = None
     if output_path:
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video_writer = cv2.VideoWriter(output_path, fourcc, stream_cfg["fps"], (stream_cfg["width"], stream_cfg["height"]))
-        print(f"[Main] Saving output video to {output_path}")
+        print(f"[Main] Saving output video to {output_path} (awaiting stream frame to initialize writer)")
         
     print(f"--- CCTV Tracking, Counting & Color Detection ---")
     print(f"Execution Mode:   {execution_mode.upper()}")
@@ -287,6 +310,12 @@ def main():
             frame_counter += 1
             h_f, w_f = frame.shape[:2]
             
+            # Lazy-initialize VideoWriter with actual frame dimensions to prevent silent discards
+            if output_path and video_writer is None:
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                video_writer = cv2.VideoWriter(output_path, fourcc, stream_cfg["fps"], (w_f, h_f))
+                print(f"[Main] Initialized VideoWriter with actual dimensions: {w_f}x{h_f}")
+            
             # 1. Apply Optional Contrast Enhancement
             if pre_cfg["use_lab_clahe"]:
                 processed_frame = enhance_bgr_with_lab_clahe(frame)
@@ -313,7 +342,9 @@ def main():
                 class_names,
                 counting_cfg,
                 cumulative_counts,
-                crossed_ids
+                crossed_ids,
+                roi_enabled=roi_enabled,
+                roi_polygon=roi_polygon
             )
             
             # 4. Draw Counting Line Overlay
