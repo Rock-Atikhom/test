@@ -10,9 +10,9 @@ stream:
   # - rtsp://172.16.30.111:8554/cctv2
   # - rtsp://172.16.30.111:8554/cctv3
   # - rtsp://172.16.30.111:8554/cctv4
-  source: "traffic.mp4"
-  width: 960
-  height: 540
+  source: "rtsp://172.16.30.111:8554/cctv0"
+  width: 1280
+  height: 720
   # Target FPS for the capture thread
   fps: 30
   output_path: "output.mp4"
@@ -35,4 +35,4 @@ preprocessing:
 counting:
   enabled: true
   # [x1, y1, x2, y2] of the virtual counting line (defaults to midpoint of screen height)
-  line_coords: [0, 270, 960, 270]
+  line_coords: [0, 360, 1280, 360]
