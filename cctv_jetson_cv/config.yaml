@@ -4,7 +4,12 @@ execution:
 
 stream:
   # Source: 0 (webcam), path to video file, or RTSP stream URL
-  # Pre-production CCTV stream: "rtsp://172.16.30.111:8554/cctv0"
+  # Mock CCTV Streams available:
+  # - rtsp://172.16.30.111:8554/cctv0
+  # - rtsp://172.16.30.111:8554/cctv1
+  # - rtsp://172.16.30.111:8554/cctv2
+  # - rtsp://172.16.30.111:8554/cctv3
+  # - rtsp://172.16.30.111:8554/cctv4
   source: "traffic.mp4"
   width: 960
   height: 540
