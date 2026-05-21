@@ -3,12 +3,17 @@ import streamlit as st
 import datetime as dt
 import pandas as pd
 import numpy as np
+import os
 
 st.set_page_config(layout='wide')
 
 st.title('🎈Streamlit Project')
 
-url_input = 'https://raw.githubusercontent.com/Rock-Atikhom/Test/master/test_data.csv'
+csv_filename = 'restaurant_orders.csv'
+if os.path.exists(csv_filename):
+    url_input = csv_filename
+else:
+    url_input = 'https://raw.githubusercontent.com/Rock-Atikhom/Test/master/restaurant_orders.csv'
 
 ##st.subheader('Output')
 ##st.warning(f'The URL of your dataset is: {url_input}')
