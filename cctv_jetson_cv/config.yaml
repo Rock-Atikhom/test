@@ -22,3 +22,8 @@ model:
 preprocessing:
   # Enable Lab CLAHE preprocessing for bad lighting conditions
   use_lab_clahe: false
+
+counting:
+  enabled: true
+  # [x1, y1, x2, y2] of the virtual counting line (defaults to midpoint of screen height)
+  line_coords: [0, 240, 640, 240]
