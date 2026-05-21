@@ -1,0 +1,24 @@
+execution:
+  # Mode: 'local' (uses PyTorch on CPU/GPU) or 'jetson' (uses TensorRT engine and hardware GStreamer)
+  mode: "local"
+
+stream:
+  # Source: 0 (webcam), path to video file (e.g. 'traffic.mp4'), or RTSP stream URL
+  source: 0
+  width: 640
+  height: 480
+  # Target FPS for the capture thread
+  fps: 30
+
+model:
+  # Path to PyTorch model (e.g., 'yolo11n.pt') or compiled TensorRT engine (e.g., 'yolo11n.engine')
+  model_path: "yolo11n.pt"
+  tracker_config: "bytetrack.yaml"
+  imgsz: 320             # Image resolution for model (320 is recommended for Jetson Nano, 640 for local)
+  conf: 0.35
+  # Class filter IDs: 2 (car), 3 (motorcycle), 5 (bus), 7 (truck)
+  classes: [2, 3, 5, 7]
+
+preprocessing:
+  # Enable Lab CLAHE preprocessing for bad lighting conditions
+  use_lab_clahe: false
