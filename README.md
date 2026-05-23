@@ -109,8 +109,8 @@ Two dataframes that connect staffing and preparation time to individual menu ite
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/Rock-Atikhom/test.git
-cd test
+git clone https://github.com/Rock-Atikhom/restaurant-analytics-dashboard.git
+cd restaurant-analytics-dashboard
 pip install -r requirements.txt
 ```
 
